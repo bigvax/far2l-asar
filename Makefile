@@ -85,4 +85,16 @@ bump-minor:
 bump-major:
 	@python3 -c 'from pathlib import Path; p=Path("VERSION"); maj,min,pat=map(int,p.read_text().strip().split(".")); v=f"{maj+1}.0.0"; p.write_text(v+"\n"); print("Version bumped to", v)'
 
-.PHONY: all test install standalone deb bump-patch bump-minor bump-major clean
+
+BUNDLE_TAR = $(DIST_DIR)/$(TARGET)-$(VERSION)-linux-$(shell uname -m).tar.gz
+
+bundle: $(TARGET) $(CFG_USER) README.md
+	mkdir -p $(DIST_DIR)/bundle
+	install -Dm755 $(TARGET) $(DIST_DIR)/bundle/$(TARGET)
+	install -Dm644 $(CFG_USER) $(DIST_DIR)/bundle/custom.ini
+	install -Dm644 README.md $(DIST_DIR)/bundle/README.md
+	tar -czf $(BUNDLE_TAR) -C $(DIST_DIR)/bundle .
+	rm -rf $(DIST_DIR)/bundle
+	@echo "Built release archive: $(BUNDLE_TAR)"
+
+.PHONY: all test install standalone deb bundle bump-patch bump-minor bump-major clean
