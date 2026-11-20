@@ -1,0 +1,37 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "configure" ]; then
+    TARGET_USER="${SUDO_USER:-$PKEXEC_USER}"
+    if [ -n "$TARGET_USER" ] && [ "$TARGET_USER" != "root" ]; then
+        USER_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
+        USER_GROUP=$(id -gn "$TARGET_USER")
+        if [ -n "$USER_HOME" ] && [ -d "$USER_HOME" ]; then
+            CFG_DIR="$USER_HOME/.config/far2l/plugins/multiarc"
+            CFG_FILE="$CFG_DIR/custom.ini"
+            TEMPLATE="/usr/share/far2l-asar/custom.ini"
+
+            mkdir -p "$CFG_DIR"
+            chown -R "$TARGET_USER:$USER_GROUP" "$USER_HOME/.config/far2l" 2>/dev/null || true
+
+            if [ ! -f "$CFG_FILE" ]; then
+                cp "$TEMPLATE" "$CFG_FILE"
+                chown "$TARGET_USER:$USER_GROUP" "$CFG_FILE"
+                chmod 644 "$CFG_FILE"
+                echo "far2l-asar: создан $CFG_FILE для пользователя $TARGET_USER"
+            else
+                cp "$CFG_FILE" "$CFG_FILE.bak"
+                chown "$TARGET_USER:$USER_GROUP" "$CFG_FILE.bak"
+                awk 'BEGIN{skip=0} /^\[ASAR\]/{skip=1; next} /^\[/{skip=0} !skip{print}' "$CFG_FILE.bak" > "$CFG_FILE.tmp"
+                printf "\n" >> "$CFG_FILE.tmp"
+                cat "$TEMPLATE" >> "$CFG_FILE.tmp"
+                mv "$CFG_FILE.tmp" "$CFG_FILE"
+                chown "$TARGET_USER:$USER_GROUP" "$CFG_FILE"
+                chmod 644 "$CFG_FILE"
+                echo "far2l-asar: обновлена секция [ASAR] в $CFG_FILE (бэкап: custom.ini.bak)"
+            fi
+        fi
+    fi
+fi
+
+exit 0
