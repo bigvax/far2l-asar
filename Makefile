@@ -13,7 +13,7 @@ ARCH := $(shell dpkg --print-architecture)
 PKG_DIR = build/deb
 DIST_DIR = dist
 DEB_FILE = $(DIST_DIR)/$(TARGET)_$(VERSION)_$(ARCH).deb
-STANDALONE_BIN = $(DIST_DIR)/$(TARGET)-$(VERSION)-linux-$(shell uname -m)
+STANDALONE_BIN = $(DIST_DIR)/$(TARGET)-$(VERSION)-standalone-linux-$(shell uname -m)
 
 PREFIX ?= $(HOME)/.local/bin
 FAR2L_CFG_DIR ?= $(HOME)/.config/far2l/plugins/multiarc
